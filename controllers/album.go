@@ -51,6 +51,25 @@ func CreateAlbum(c *gin.Context) {
 	return
 }
 
+func CreateManyAlbum(c *gin.Context) {
+	request := struct {
+		Albums []models.Album `json:"albums"`
+	}{}
+	err := c.ShouldBindJSON(&request)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.Response{Data: err.Error()})
+		return
+	}
+
+	_, err = services.CreateManyAlbum(request.Albums)
+	if err != nil {
+		c.JSON(http.StatusNotFound, models.Response{Data: err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, models.Response{Status: http.StatusOK, Data: request.Albums})
+}
+
 func GetAlbumById(c *gin.Context) {
 	id := c.Param("id")
 

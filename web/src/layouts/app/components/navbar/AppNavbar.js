@@ -1,6 +1,7 @@
 import {Box, styled, TextField, Toolbar} from "@mui/material";
 import MuiAppBar from "@mui/material/AppBar";
 import AppProfileMenu from "layouts/app/components/navbar/AppProfileMenu";
+import Logo from "components/shared/Logo";
 
 const AppBar = styled(MuiAppBar)((({ theme, open, appNavbarHeight, drawerWidth }) => {
     return {
@@ -28,11 +29,13 @@ export default function AppNavbar() {
             position="fixed"
             appNavbarHeight={50}
             drawerWidth={220}>
-            <Toolbar sx={{ minHeight: `${50}px !important` }}>
-                <TextField
-                    placeholder="Search song ..."/>
-
-                <Box sx={{ flexGrow: 1 }}/>
+            <Toolbar sx={{ minHeight: `${50}px !important`, justifyContent: "space-between", alignItems: "center" }}>
+                <Logo width={40}/>
+                <Box sx={{ flexGrow: 0.5 }}>
+                    <TextField
+                        fullWidth
+                        placeholder="Search song ..."/>
+                </Box>
                 <AppProfileMenu/>
             </Toolbar>
         </AppBar>

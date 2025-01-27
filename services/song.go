@@ -5,6 +5,7 @@ import (
 	"cerllo/models"
 	"context"
 	"errors"
+	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -32,7 +33,7 @@ func GetSongs(filters bson.M, opt *options.FindOptions, withDetail bool) []model
 					data.Album = *album
 				}
 			}
-			
+
 			results = append(results, data)
 		}
 	}
@@ -103,6 +104,13 @@ func DeleteSong(id string) (*mongo.DeleteResult, error) {
 func CreateManySong(params []models.Song) (bool, error) {
 	data := make([]interface{}, 0)
 	for _, val := range params {
+		val.Id = uuid.New().String()
+
+		album := GetAlbum(bson.M{"id": val.AlbumId}, nil)
+		if album != nil {
+			val.ArtistId = album.ArtistId
+		}
+		
 		val.CreatedAt = time.Now()
 		val.UpdatedAt = time.Now()
 		data = append(data, val)

@@ -74,10 +74,12 @@ func main() {
 			protected.DELETE("/destroy/:ids", controllers.DestroyFile)
 
 			protected.POST("/artist", controllers.CreateArtist)
+			protected.POST("/artist/multiple", controllers.CreateManyArtist)
 			protected.PATCH("/artist/:id", controllers.UpdateArtist)
 			protected.DELETE("/artist/:id", controllers.DeleteArtist)
 
 			protected.POST("/album", controllers.CreateAlbum)
+			protected.POST("/album/multiple", controllers.CreateManyAlbum)
 			protected.PATCH("/album/:id", controllers.UpdateAlbum)
 			protected.DELETE("/album/:id", controllers.DeleteAlbum)
 
@@ -101,6 +103,7 @@ func main() {
 			protected.POST("/role/attach-permission", controllers.AttachPermissionsToRole)
 
 			protected.POST("/song", controllers.CreateSong)
+			protected.POST("/song/multiple", controllers.CreateManySong)
 			protected.PATCH("/song/:id", controllers.UpdateSong)
 			protected.DELETE("/song/:id", controllers.DeleteSong)
 

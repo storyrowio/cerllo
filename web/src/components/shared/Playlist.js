@@ -24,10 +24,14 @@ export default function Playlist(props) {
         sendGAEvent('event', 'buttonClicked', { value: 'PlayFromList' })
         dispatch(AppActions.setCurrentPlay({song, index, isPlaying: false}));
         setTimeout(() => {
-            dispatch(AppActions.setIsPlaying(true));
+            if (currentPlay.song === song && currentPlay.isPlaying) {
+                dispatch(AppActions.setIsPlaying(false));
+            } else {
+                dispatch(AppActions.setIsPlaying(true));
+            }
         }, 500);
     };
-    console.log(songs)
+
     return (
         <Box sx={{ width: '100%' }}>
             <TableContainer>

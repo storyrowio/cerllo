@@ -5,6 +5,7 @@ import (
 	"cerllo/models"
 	"context"
 	"errors"
+	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -90,6 +91,7 @@ func DeleteAlbum(id string) (*mongo.DeleteResult, error) {
 func CreateManyAlbum(params []models.Album) (bool, error) {
 	data := make([]interface{}, 0)
 	for _, val := range params {
+		val.Id = uuid.New().String()
 		val.CreatedAt = time.Now()
 		val.UpdatedAt = time.Now()
 		data = append(data, val)
