@@ -1,2 +1,5 @@
 export const ROLE_API = "/role"
+export const ARTIST_API = "/artist"
+export const ALBUM_API = "/album"
 export const SONG_API = "/song"
+export const PLAYLIST_API = "/playlist"

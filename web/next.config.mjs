@@ -1,7 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    output: 'export',  // Changed to 'export' for static file generation
-    distDir: 'dist',   // Output to dist directory
     images: {
         unoptimized: true, // Required for static export
     },

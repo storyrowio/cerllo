@@ -22,9 +22,6 @@ WORKDIR /app
 
 COPY . .
 
-# Copy built client files from previous stage
-COPY --from=client-builder /app/web/dist ./web/dist
-
 # Clean up unnecessary files
 RUN rm -f .env .env.* .env-*
 RUN rm -rf .git .gitignore
@@ -34,6 +31,19 @@ RUN go mod tidy
 COPY *.go ./
 RUN go build -o /server
 
-EXPOSE 8000
+RUN apk update && apk add --no-cache \
+    nodejs \
+    npm \
+    bash
 
-CMD [ "/server" ]
+# Copy built client files from previous stage
+COPY --from=client-builder /app/web /app/web
+WORKDIR /app/web
+RUN npm install --production
+
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
+
+EXPOSE 8000 3000
+
+CMD [ "/start.sh" ]

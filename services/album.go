@@ -14,13 +14,19 @@ import (
 
 const AlbumCollection = "albums"
 
-func GetAlbums(filters bson.M, opt *options.FindOptions) []models.Album {
+func GetAlbums(filters bson.M, opt *options.FindOptions, withDetail bool) []models.Album {
 	results := make([]models.Album, 0)
 
 	cursor := database.Find(AlbumCollection, filters, opt)
 	for cursor.Next(context.Background()) {
 		var data models.Album
 		if cursor.Decode(&data) == nil {
+			if withDetail {
+				artist := GetArtist(bson.M{"id": data.ArtistId}, nil)
+				if artist != nil {
+					data.Artist = *artist
+				}
+			}
 			results = append(results, data)
 		}
 	}
@@ -29,7 +35,7 @@ func GetAlbums(filters bson.M, opt *options.FindOptions) []models.Album {
 }
 
 func GetAlbumsWithPagination(filters bson.M, opt *options.FindOptions, query models.Query) models.Result {
-	results := GetAlbums(filters, opt)
+	results := GetAlbums(filters, opt, true)
 
 	count := database.Count(AlbumCollection, filters)
 	pagination := query.GetPagination(count)

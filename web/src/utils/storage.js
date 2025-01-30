@@ -11,7 +11,6 @@ const SetItem = (key, value) => {
 const GetItem = (key) => {
     if (typeof window !== 'undefined') {
         const value = localStorage.getItem(key);
-
         if (value) {
             try {
                 return JSON.parse(value);

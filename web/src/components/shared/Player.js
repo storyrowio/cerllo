@@ -33,8 +33,8 @@ const PlayerWrapper = styled(Box)(({theme}) => ({
 }));
 
 const PlayerCard = styled(Box)(({ theme }) => ({
-    padding: theme.spacing(3, 5),
-    background: theme.palette.background.paper
+    padding: theme.spacing(1.5, 5),
+    background: theme.palette.background.default
 }));
 
 export default function Player({ songs }) {
@@ -107,7 +107,13 @@ export default function Player({ songs }) {
 
         if (audioRef.current.currentTime === audioRef.current.duration) {
             setTimeout(() => {
-                handleNextPrev(currentPlay.index + 1);
+                if (playlistSetting === 'repeatOne') {
+                    handlePlay();
+                } else if (playlistSetting === 'repeat') {
+                    handleNextPrev(currentPlay.index + 1);
+                } else {
+                    handlePause();
+                }
             }, 500);
         }
     };

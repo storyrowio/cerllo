@@ -163,8 +163,8 @@ const ButtonTheme = () => {
                     ),
                     ...(ownerState.size === 'medium' &&
                         ownerState.variant === 'text' && {
-                            padding: theme.spacing(2.5, 3)
-                        })
+                            padding: theme.spacing(1.75, 3)
+                        }),
                 }),
                 endIcon: ({ ownerState }) => ({
                     ...(ownerState.size === 'small' && {

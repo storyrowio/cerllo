@@ -5,11 +5,12 @@ import (
 	"cerllo/controllers"
 	"cerllo/database"
 	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"log"
 	"net/http"
+	"net/http/httputil"
+	"net/url"
 	"os"
 	"time"
 )
@@ -30,7 +31,8 @@ func main() {
 	router := gin.New()
 	router.Use(gin.Logger())
 
-	router.Use(static.Serve("/", static.LocalFile("./web/dist", true)))
+	clientUrl, _ := url.Parse("http://localhost:3000")
+	proxy := httputil.NewSingleHostReverseProxy(clientUrl)
 
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowAllOrigins = true
@@ -94,6 +96,7 @@ func main() {
 			protected.GET("/playlist/:id", controllers.GetPlaylistById)
 			protected.PATCH("/playlist/:id", controllers.UpdatePlaylist)
 			protected.DELETE("/playlist/:id", controllers.DeletePlaylist)
+			protected.POST("/playlist/add-song", controllers.AddSongToPlaylist)
 
 			protected.GET("/role", controllers.GetRoles)
 			protected.POST("/role", controllers.CreateRole)
@@ -114,6 +117,10 @@ func main() {
 			protected.DELETE("/user/:id", controllers.DeleteUser)
 		}
 	}
+
+	router.NoRoute(func(c *gin.Context) {
+		proxy.ServeHTTP(c.Writer, c.Request)
+	})
 
 	port := "8000"
 	if os.Getenv("PORT") != "" {

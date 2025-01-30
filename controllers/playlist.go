@@ -29,8 +29,11 @@ func GetPlaylists(c *gin.Context) {
 }
 
 func CreatePlaylist(c *gin.Context) {
+	profile := services.GetCurrentUser(c.Request)
+
 	var request models.Playlist
 	request.Id = uuid.New().String()
+	request.UserId = profile.Id
 
 	err := c.ShouldBindJSON(&request)
 	if err != nil {
@@ -47,14 +50,17 @@ func CreatePlaylist(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, models.Response{Data: request})
+	filters := bson.M{"userId": request.UserId}
+	results := services.GetPlaylists(filters, nil)
+
+	c.JSON(http.StatusOK, models.Response{Data: results})
 	return
 }
 
 func GetPlaylistById(c *gin.Context) {
 	id := c.Param("id")
 
-	result := services.GetPlaylist(bson.M{"id": id}, nil)
+	result := services.GetPlaylist(bson.M{"id": id}, nil, true)
 	if result == nil {
 		c.JSON(http.StatusNotFound, models.Result{Data: "Data Not Found"})
 		return
@@ -66,7 +72,7 @@ func GetPlaylistById(c *gin.Context) {
 func UpdatePlaylist(c *gin.Context) {
 	id := c.Param("id")
 
-	Playlist := services.GetPlaylist(bson.M{"id": id}, nil)
+	Playlist := services.GetPlaylist(bson.M{"id": id}, nil, false)
 	if Playlist == nil {
 		c.JSON(http.StatusNotFound, models.Result{Data: "Data Not Found"})
 		return
@@ -97,6 +103,40 @@ func DeletePlaylist(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, models.Response{Data: "Failed Delete Data"})
 		return
 	}
+
+	c.JSON(http.StatusOK, models.Response{Data: "Success"})
+}
+
+func AddSongToPlaylist(c *gin.Context) {
+	request := struct {
+		PlaylistId string `json:"playlistId"`
+		SongId     string `json:"songId"`
+	}{}
+	err := c.ShouldBindJSON(&request)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.Response{Data: err.Error()})
+		return
+	}
+
+	playlist := services.GetPlaylist(bson.M{"id": request.PlaylistId}, nil, false)
+	if playlist == nil {
+		c.JSON(http.StatusBadRequest, models.Response{Data: "Playlist Not Found"})
+		return
+	}
+
+	isExist := false
+	for _, val := range playlist.SongIds {
+		if val == request.SongId {
+			isExist = true
+		}
+	}
+
+	if !isExist {
+		playlist.SongIds = append(playlist.SongIds, request.SongId)
+	}
+
+	playlist.UpdatedAt = time.Now()
+	services.UpdatePlaylist(playlist.Id, playlist)
 
 	c.JSON(http.StatusOK, models.Response{Data: "Success"})
 }

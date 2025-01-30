@@ -31,7 +31,7 @@ export default function RootLayout({ children }) {
           <meta name="google-adsense-account" content="ca-pub-9155496041062406"/>
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-      <HolyLoader color="#757575"/>
+      <HolyLoader color="#6f7686"/>
       <Provider store={store}>
           <RootApp>
               {children}

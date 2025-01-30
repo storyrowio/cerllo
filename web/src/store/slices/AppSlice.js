@@ -1,6 +1,7 @@
 import {createSlice} from "@reduxjs/toolkit";
 
 const initialState = {
+    songs: [],
     isAuthed: false,
     currentPlay: {
         song: {},
@@ -8,12 +9,18 @@ const initialState = {
         isPlaying: false,
     },
     isPlaying: false,
+    playlists: [],
+    playlistForm: false,
+    currentPlaylist: null
 };
 
 export const AppSlice = createSlice({
     name: 'app',
     initialState,
     reducers: {
+        setSongs: (state, action) => {
+            state.songs = action.payload;
+        },
         setIsAuthed: (state, action) => {
             state.isAuthed = action.payload;
         },
@@ -22,7 +29,16 @@ export const AppSlice = createSlice({
         },
         setIsPlaying: (state, action) => {
             state.currentPlay.isPlaying = action.payload;
-        }
+        },
+        setPlaylists: (state, action) => {
+            state.playlists = action.payload;
+        },
+        setPlaylistForm: (state, action) => {
+            state.playlistForm = action.payload;
+        },
+        setCurrentPlaylist: (state, action) => {
+            state.currentPlaylist = action.payload;
+        },
     }
 });
 

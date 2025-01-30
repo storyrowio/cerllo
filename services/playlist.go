@@ -51,7 +51,7 @@ func CreatePlaylist(params models.Playlist) (bool, error) {
 	return true, nil
 }
 
-func GetPlaylist(filter bson.M, opts *options.FindOneOptions) *models.Playlist {
+func GetPlaylist(filter bson.M, opts *options.FindOneOptions, withDetails bool) *models.Playlist {
 	var data models.Playlist
 	err := database.FindOne(PlaylistCollection, filter, opts).Decode(&data)
 	if err != nil {
@@ -60,6 +60,16 @@ func GetPlaylist(filter bson.M, opts *options.FindOneOptions) *models.Playlist {
 		}
 		return nil
 	}
+
+	songs := make([]models.Song, 0)
+	if data.SongIds != nil {
+		songs = GetSongs(bson.M{"id": bson.M{
+			"$in": data.SongIds,
+		}}, nil, true)
+	}
+
+	data.Songs = songs
+
 	return &data
 }
 

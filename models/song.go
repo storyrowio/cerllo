@@ -13,6 +13,7 @@ type Album struct {
 	ArtistId    string `json:"artistId" bson:"artistId"`
 	ReleaseDate string `json:"releaseDate" bson:"releaseDate"`
 	Image       string `json:"image"`
+	Artist      Artist `json:"artist" bson:"-"`
 	BasicDate   `bson:",inline"`
 }
 

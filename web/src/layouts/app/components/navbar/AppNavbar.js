@@ -6,11 +6,12 @@ import Logo from "components/shared/Logo";
 const AppBar = styled(MuiAppBar)((({ theme, open, appNavbarHeight, drawerWidth }) => {
     return {
         height: `${appNavbarHeight}px`,
-        background: 'transparent',
+        background: theme.palette.background.default,
         transition: theme.transitions.create(['margin', 'width'], {
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.leavingScreen,
         }),
+        zIndex: 1,
         ...(open && {
             width: `calc(100% - ${drawerWidth}px)`,
             marginLeft: `${drawerWidth}px`,
