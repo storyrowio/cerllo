@@ -3,7 +3,7 @@
 import {useEffect, useRef} from "react";
 import {Box, useTheme} from "@mui/material";
 
-const AdsterraBanner = ({ domainSource, adsKey, width, height }) => {
+const AdsterraBanner = ({ domainSource, adsKey, width, height, nativeBanner = false }) => {
     const theme = useTheme();
 
     const banner = useRef();
@@ -21,7 +21,12 @@ const AdsterraBanner = ({ domainSource, adsKey, width, height }) => {
             const script = document.createElement('script')
             script.type = 'text/javascript'
             script.src = `//${domainSource}/${atOptions.key}/invoke.js`
-            conf.innerHTML = `atOptions = ${JSON.stringify(atOptions)}`
+            if (!nativeBanner) {
+                conf.innerHTML = `atOptions = ${JSON.stringify(atOptions)}`
+            } else {
+                script.async = true
+                script["data-cfasync"] = "false"
+            }
 
             if (banner.current) {
                 banner.current.append(conf)
@@ -30,7 +35,14 @@ const AdsterraBanner = ({ domainSource, adsKey, width, height }) => {
         }
     }, [adsKey])
 
-    return <Box ref={banner} />;
+    return (
+        <>
+            <Box ref={banner}/>
+            {nativeBanner && (
+                <div id={`container-${adsKey}`}></div>
+            )}
+        </>
+    );
 };
 
 export default AdsterraBanner;
