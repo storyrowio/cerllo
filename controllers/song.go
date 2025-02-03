@@ -126,3 +126,7 @@ func DeleteSong(c *gin.Context) {
 
 	c.JSON(http.StatusOK, models.Response{Data: "Success"})
 }
+
+func CreateDownloadSongFromProvider(c *gin.Context) {
+
+}

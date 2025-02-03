@@ -44,3 +44,11 @@ type Favorite struct {
 	Songs     []Song   `json:"songs" bson:"-"`
 	BasicDate `bson:",inline"`
 }
+
+type SongFile struct {
+	Artist   string `json:"artist"`
+	Album    string `json:"album"`
+	Title    string `json:"title"`
+	Filename string `json:"filename"`
+	Url      string `json:"url"`
+}

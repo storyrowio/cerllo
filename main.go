@@ -4,9 +4,11 @@ import (
 	"cerllo/config"
 	"cerllo/controllers"
 	"cerllo/database"
+	"context"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"github.com/lrstanley/go-ytdlp"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -26,6 +28,12 @@ func main() {
 	if !database.Init() {
 		log.Printf("Connected to MongoDB URI: Failure")
 		return
+	}
+
+	ytdlp.MustInstall(context.TODO(), nil)
+
+	if err := os.MkdirAll("downloads", 0755); err != nil {
+		log.Println("Can not create downloads folder: ", err.Error())
 	}
 
 	router := gin.New()
@@ -49,6 +57,9 @@ func main() {
 			c.JSON(http.StatusOK, "Cerllo v1.0.0")
 			return
 		})
+
+		api.POST("/convert", controllers.ConvertYoutubeToMp3)
+		api.GET("/download/:fileName", controllers.DownloadFile)
 
 		api.GET("/default", controllers.CreateDefaultData)
 

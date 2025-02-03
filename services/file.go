@@ -4,10 +4,12 @@ import (
 	"cerllo/database"
 	"cerllo/models"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/cloudinary/cloudinary-go/v2"
 	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
+	"github.com/lrstanley/go-ytdlp"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/oauth2"
@@ -225,4 +227,48 @@ func DeleteFiles(ids []string, userId string, token string) error {
 	}
 
 	return nil
+}
+
+func DownloadFromYoutube(req models.ConvertYoutubeRequest) (string, error) {
+	var songFile models.SongFile
+
+	if req.Format != "" {
+		dl := ytdlp.New().PrintJSON()
+		res, err := dl.Run(context.TODO(), req.Url)
+		if err != nil {
+			panic(err)
+		}
+
+		err = json.Unmarshal([]byte(res.Stdout), &songFile)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	switch req.Format {
+	case "mp3":
+		dl := ytdlp.New().
+			AudioFormat("mp3").
+			Output("downloads/%(title)s.mp3").
+			PrintJSON()
+
+		_, err := dl.Run(context.TODO(), req.Url)
+		if err != nil {
+			panic(err)
+		}
+	case "mp4":
+		dl := ytdlp.New().
+			FormatSort("res,ext:mp4:m4a").
+			RecodeVideo("mp4").
+			Output("downloads/%(title)s.mp4")
+
+		_, err := dl.Run(context.TODO(), req.Url)
+		if err != nil {
+			panic(err)
+		}
+	default:
+		return "", errors.New("Invalid format")
+	}
+
+	return "", nil
 }
