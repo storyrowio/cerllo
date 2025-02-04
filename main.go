@@ -120,6 +120,7 @@ func main() {
 			protected.POST("/song/multiple", controllers.CreateManySong)
 			protected.PATCH("/song/:id", controllers.UpdateSong)
 			protected.DELETE("/song/:id", controllers.DeleteSong)
+			protected.POST("/song/download", controllers.CreateDownloadFromProvider)
 
 			protected.GET("/user", controllers.GetUsers)
 			protected.POST("/user", controllers.CreateUser)

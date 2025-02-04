@@ -3,10 +3,13 @@ package controllers
 import (
 	"cerllo/models"
 	"cerllo/services"
+	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
+	"log"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -127,6 +130,117 @@ func DeleteSong(c *gin.Context) {
 	c.JSON(http.StatusOK, models.Response{Data: "Success"})
 }
 
-func CreateDownloadSongFromProvider(c *gin.Context) {
+func CreateDownloadFromProvider(c *gin.Context) {
+	request := struct {
+		Url      string `json:"url"`
+		Provider string `json:"provider"` // youtube, etc
+		Format   string `json:"format"`   // mp3, mp4
+	}{}
+	err := c.ShouldBindJSON(&request)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.Response{Data: err.Error()})
+		return
+	}
 
+	var songFile *models.SongFile
+
+	if request.Provider == models.YoutubeProvider {
+		file, err := services.DownloadFromYoutube(models.ConvertYoutubeRequest{
+			Url:    request.Url,
+			Format: request.Format,
+		})
+		if err != nil {
+			c.JSON(http.StatusBadRequest, models.Response{Data: err.Error()})
+			return
+		}
+		songFile = file
+	}
+
+	if songFile == nil {
+		c.JSON(http.StatusBadRequest, models.Response{Data: errors.New("Failed to download song")})
+		return
+	}
+
+	file, err := os.Open(songFile.Path)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.Response{Data: err.Error()})
+		return
+	}
+	defer file.Close()
+
+	result, err := services.UploadInterfaceToCloudinary(file, songFile.Filename)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.Response{Data: err.Error()})
+		return
+	}
+
+	songFile.Url = result.Url
+
+	isArtistExist := false
+	isAlbumExist := false
+	var albumId string
+
+	// Check artist
+	artist := services.GetArtist(bson.M{"name": songFile.Artist}, nil)
+	if artist != nil {
+		isArtistExist = true
+		// Check album
+		album := services.GetAlbum(bson.M{"name": songFile.Album}, nil)
+		if album != nil {
+			albumId = album.Id
+			isAlbumExist = true
+		}
+	}
+
+	if !isArtistExist {
+		artist = &models.Artist{
+			Id:    uuid.New().String(),
+			Name:  songFile.Artist,
+			Image: "",
+			BasicDate: models.BasicDate{
+				CreatedAt: time.Now(),
+				UpdatedAt: time.Now(),
+			},
+		}
+		_, err := services.CreateArtist(*artist)
+		if err != nil {
+			log.Println("Error create artist", err.Error())
+		}
+	}
+
+	if !isAlbumExist {
+		albumId = uuid.New().String()
+		_, err := services.CreateAlbum(models.Album{
+			Id:          albumId,
+			Title:       songFile.Album,
+			ArtistId:    artist.Id,
+			ReleaseDate: "01-01-2001",
+			Image:       "",
+			BasicDate: models.BasicDate{
+				CreatedAt: time.Now(),
+				UpdatedAt: time.Now(),
+			},
+		})
+		if err != nil {
+			log.Println("Error create album", err.Error())
+		}
+	}
+
+	song := models.Song{
+		Id:       uuid.New().String(),
+		Title:    songFile.Title,
+		ArtistId: artist.Id,
+		AlbumId:  albumId,
+		Url:      songFile.Url,
+		BasicDate: models.BasicDate{
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+		},
+	}
+	_, err = services.CreateSong(song)
+	if err != nil {
+		log.Println("Error create album", err.Error())
+	}
+
+	c.JSON(http.StatusOK, models.Response{Data: song})
 }

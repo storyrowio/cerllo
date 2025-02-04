@@ -1,5 +1,9 @@
 package models
 
+const (
+	YoutubeProvider = "youtube"
+)
+
 type Artist struct {
 	Id        string `json:"id"`
 	Name      string `json:"name"`
@@ -51,4 +55,5 @@ type SongFile struct {
 	Title    string `json:"title"`
 	Filename string `json:"filename"`
 	Url      string `json:"url"`
+	Path     string `json:"path"`
 }

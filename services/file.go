@@ -1,6 +1,7 @@
 package services
 
 import (
+	"bytes"
 	"cerllo/database"
 	"cerllo/models"
 	"context"
@@ -13,6 +14,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/oauth2"
+	"io"
 	"log"
 	"mime/multipart"
 	"os"
@@ -73,6 +75,33 @@ func UploadToCloudinary(fileHeader *multipart.FileHeader, path string) (*models.
 			Extension:   filepath.Ext(fileHeader.Filename),
 		},
 		Driver: models.CloudinaryDriver,
+	}, nil
+}
+
+func UploadInterfaceToCloudinary(file interface{}, filename string) (*models.UploadResult, error) {
+	config := GetCloudinaryConfig()
+	if config == nil {
+		return nil, errors.New("No cloudinary config found!")
+	}
+
+	cld, err := CloudinaryInstance(*config)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := cld.Upload.Upload(context.Background(), file, uploader.UploadParams{
+		Folder:   os.Getenv("APP_NAME"),
+		PublicID: filename,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.UploadResult{
+		Url:      resp.SecureURL,
+		FileName: filename,
+		Path:     resp.PublicID,
+		Driver:   models.CloudinaryDriver,
 	}, nil
 }
 
@@ -229,7 +258,7 @@ func DeleteFiles(ids []string, userId string, token string) error {
 	return nil
 }
 
-func DownloadFromYoutube(req models.ConvertYoutubeRequest) (string, error) {
+func DownloadFromYoutube(req models.ConvertYoutubeRequest) (*models.SongFile, error) {
 	var songFile models.SongFile
 
 	if req.Format != "" {
@@ -267,8 +296,48 @@ func DownloadFromYoutube(req models.ConvertYoutubeRequest) (string, error) {
 			panic(err)
 		}
 	default:
-		return "", errors.New("Invalid format")
+		return nil, errors.New("Invalid format")
 	}
 
-	return "", nil
+	songFile.Path = "./downloads/" + songFile.Title + "." + req.Format
+
+	return &songFile, nil
+}
+
+func ConvertFileToMultipartFile(path string) (*multipart.FileHeader, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		fmt.Println("Failed to open file:", err)
+		return nil, err
+	}
+	defer file.Close()
+
+	// Create a buffer to store the multipart file
+	var buf bytes.Buffer
+	writer := multipart.NewWriter(&buf)
+
+	// Create a form file field
+	formFile, err := writer.CreateFormFile("file", path)
+	if err != nil {
+		fmt.Println("Failed to create form file:", err)
+		return nil, err
+	}
+
+	// Copy file data into form file
+	_, err = io.Copy(formFile, file)
+	if err != nil {
+		fmt.Println("Failed to copy file:", err)
+		return nil, err
+	}
+
+	// Close the multipart writer
+	writer.Close()
+
+	// Convert to multipart.FileHeader
+	fileHeader := multipart.FileHeader{
+		Filename: path,
+		Size:     int64(buf.Len()),
+	}
+
+	return &fileHeader, nil
 }
