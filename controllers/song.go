@@ -132,9 +132,14 @@ func DeleteSong(c *gin.Context) {
 
 func CreateDownloadFromProvider(c *gin.Context) {
 	request := struct {
-		Url      string `json:"url"`
-		Provider string `json:"provider"` // youtube, etc
-		Format   string `json:"format"`   // mp3, mp4
+		Url          string `json:"url"`
+		Provider     string `json:"provider"` // youtube, etc
+		Format       string `json:"format"`   // mp3, mp4
+		Artist       string `json:"artist"`
+		ArtistImage  string `json:"artistImage"`
+		Album        string `json:"album"`
+		AlbumImage   string `json:"albumImage"`
+		AlbumRelease string `json:"albumRelease"`
 	}{}
 	err := c.ShouldBindJSON(&request)
 	if err != nil {
@@ -174,7 +179,19 @@ func CreateDownloadFromProvider(c *gin.Context) {
 		return
 	}
 
+	err = os.Remove(songFile.Path)
+	if err != nil {
+		log.Println("Delete local file failed", err.Error())
+	}
+
 	songFile.Url = result.Url
+
+	if request.Artist != "" {
+		songFile.Artist = request.Artist
+	}
+	if request.Album != "" {
+		songFile.Album = request.Album
+	}
 
 	isArtistExist := false
 	isAlbumExist := false
@@ -196,7 +213,7 @@ func CreateDownloadFromProvider(c *gin.Context) {
 		artist = &models.Artist{
 			Id:    uuid.New().String(),
 			Name:  songFile.Artist,
-			Image: "",
+			Image: request.ArtistImage,
 			BasicDate: models.BasicDate{
 				CreatedAt: time.Now(),
 				UpdatedAt: time.Now(),
@@ -209,13 +226,17 @@ func CreateDownloadFromProvider(c *gin.Context) {
 	}
 
 	if !isAlbumExist {
+		releaseDate := "01-01-2001"
+		if request.AlbumRelease != "" {
+			releaseDate = request.AlbumRelease
+		}
 		albumId = uuid.New().String()
 		_, err := services.CreateAlbum(models.Album{
 			Id:          albumId,
 			Title:       songFile.Album,
 			ArtistId:    artist.Id,
-			ReleaseDate: "01-01-2001",
-			Image:       "",
+			ReleaseDate: releaseDate,
+			Image:       request.AlbumImage,
 			BasicDate: models.BasicDate{
 				CreatedAt: time.Now(),
 				UpdatedAt: time.Now(),
