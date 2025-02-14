@@ -31,7 +31,7 @@ export default function Song() {
             }}>
                 <Playlist songs={resData?.data ?? []}/>
             </Box>
-            <AdsterraBanner domainSource="bladderssewing.com" adsKey="4265b0c31cfd9dd61b13afb31bd13a16" width={160} height={600}/>
+            <AdsterraBanner domainSource="highperformanceformat.com" adsKey="4265b0c31cfd9dd61b13afb31bd13a16" width={160} height={600}/>
         </Stack>
     )
 }

@@ -36,18 +36,18 @@ export default function PlaylistPage() {
                     </CardContent>
                 </Card>
                 <Box height={50}/>
-                <AdsterraBanner domainSource="bladderssewing.com" adsKey="4265b0c31cfd9dd61b13afb31bd13a16" width={320} height={50}/>
+                <AdsterraBanner domainSource="highperformanceformat.com" adsKey="4265b0c31cfd9dd61b13afb31bd13a16" width={320} height={50}/>
                 <Grid2 container spacing={3}>
                     <Grid2 size={{ xs: 12, sm: 12, lg: 6, xl: 6}}>
-                        <AdsterraBanner domainSource="bladderssewing.com" adsKey="4265b0c31cfd9dd61b13afb31bd13a16" width={320} height={50}/>
+                        <AdsterraBanner domainSource="highperformanceformat.com" adsKey="4265b0c31cfd9dd61b13afb31bd13a16" width={320} height={50}/>
                     </Grid2>
                     <Grid2 size={{ xs: 12, sm: 12, lg: 6, xl: 6}}>
-                        <AdsterraBanner domainSource="bladderssewing.com" adsKey="4265b0c31cfd9dd61b13afb31bd13a16" width={320} height={50}/>
+                        <AdsterraBanner domainSource="highperformanceformat.com" adsKey="4265b0c31cfd9dd61b13afb31bd13a16" width={320} height={50}/>
                     </Grid2>
                 </Grid2>
             </Box>
             <Box width={240}>
-                <AdsterraBanner domainSource="bladderssewing.com" adsKey="4265b0c31cfd9dd61b13afb31bd13a16" width={160} height={600}/>
+                <AdsterraBanner domainSource="highperformanceformat.com" adsKey="4265b0c31cfd9dd61b13afb31bd13a16" width={160} height={600}/>
             </Box>
         </Stack>
     )

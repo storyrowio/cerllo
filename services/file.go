@@ -90,8 +90,10 @@ func UploadInterfaceToCloudinary(file interface{}, filename string) (*models.Upl
 	}
 
 	resp, err := cld.Upload.Upload(context.Background(), file, uploader.UploadParams{
-		Folder:   os.Getenv("APP_NAME"),
-		PublicID: filename,
+		Folder:       os.Getenv("APP_NAME"),
+		PublicID:     filename,
+		Format:       "mp3",
+		ResourceType: "audio",
 	})
 	if err != nil {
 		return nil, err

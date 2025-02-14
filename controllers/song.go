@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -135,6 +136,7 @@ func CreateDownloadFromProvider(c *gin.Context) {
 		Url          string `json:"url"`
 		Provider     string `json:"provider"` // youtube, etc
 		Format       string `json:"format"`   // mp3, mp4
+		Title        string `json:"title"`
 		Artist       string `json:"artist"`
 		ArtistImage  string `json:"artistImage"`
 		Album        string `json:"album"`
@@ -166,26 +168,6 @@ func CreateDownloadFromProvider(c *gin.Context) {
 		return
 	}
 
-	file, err := os.Open(songFile.Path)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, models.Response{Data: err.Error()})
-		return
-	}
-	defer file.Close()
-
-	result, err := services.UploadInterfaceToCloudinary(file, songFile.Filename)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, models.Response{Data: err.Error()})
-		return
-	}
-
-	err = os.Remove(songFile.Path)
-	if err != nil {
-		log.Println("Delete local file failed", err.Error())
-	}
-
-	songFile.Url = result.Url
-
 	if request.Artist != "" {
 		songFile.Artist = request.Artist
 	}
@@ -193,16 +175,39 @@ func CreateDownloadFromProvider(c *gin.Context) {
 		songFile.Album = request.Album
 	}
 
+	file, err := os.Open(songFile.Path)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.Response{Data: err.Error()})
+		return
+	}
+	defer file.Close()
+
+	// Change format file name
+	songFile.Filename = strings.ReplaceAll(songFile.Artist, " ", "_") + "_" + strings.ReplaceAll(request.Title, " ", "_")
+
+	result, err := services.UploadInterfaceToCloudinary(file, songFile.Filename)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.Response{Data: err.Error()})
+		return
+	}
+
+	if result.Url == "" {
+		c.JSON(http.StatusBadRequest, models.Response{Data: "Failed to upload song"})
+		return
+	}
+
+	songFile.Url = result.Url
+
 	isArtistExist := false
 	isAlbumExist := false
 	var albumId string
 
 	// Check artist
-	artist := services.GetArtist(bson.M{"name": songFile.Artist}, nil)
+	artist := services.GetArtist(bson.M{"name": request.Artist}, nil)
 	if artist != nil {
 		isArtistExist = true
 		// Check album
-		album := services.GetAlbum(bson.M{"name": songFile.Album}, nil)
+		album := services.GetAlbum(bson.M{"name": request.Album}, nil)
 		if album != nil {
 			albumId = album.Id
 			isAlbumExist = true
@@ -212,7 +217,7 @@ func CreateDownloadFromProvider(c *gin.Context) {
 	if !isArtistExist {
 		artist = &models.Artist{
 			Id:    uuid.New().String(),
-			Name:  songFile.Artist,
+			Name:  request.Artist,
 			Image: request.ArtistImage,
 			BasicDate: models.BasicDate{
 				CreatedAt: time.Now(),
@@ -233,7 +238,7 @@ func CreateDownloadFromProvider(c *gin.Context) {
 		albumId = uuid.New().String()
 		_, err := services.CreateAlbum(models.Album{
 			Id:          albumId,
-			Title:       songFile.Album,
+			Title:       request.Album,
 			ArtistId:    artist.Id,
 			ReleaseDate: releaseDate,
 			Image:       request.AlbumImage,
@@ -249,7 +254,7 @@ func CreateDownloadFromProvider(c *gin.Context) {
 
 	song := models.Song{
 		Id:       uuid.New().String(),
-		Title:    songFile.Title,
+		Title:    request.Title,
 		ArtistId: artist.Id,
 		AlbumId:  albumId,
 		Url:      songFile.Url,
@@ -260,7 +265,12 @@ func CreateDownloadFromProvider(c *gin.Context) {
 	}
 	_, err = services.CreateSong(song)
 	if err != nil {
-		log.Println("Error create album", err.Error())
+		log.Println("Error create song", err.Error())
+	}
+
+	err = os.Remove(songFile.Path)
+	if err != nil {
+		log.Println("Delete local file failed", err.Error())
 	}
 
 	c.JSON(http.StatusOK, models.Response{Data: song})
