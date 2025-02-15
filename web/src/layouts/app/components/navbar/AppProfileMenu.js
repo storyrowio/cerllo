@@ -32,6 +32,7 @@ export default function AppProfileMenu(props) {
     const logout = () => {
         setAnchorElUser(null);
         dispatch(AppActions.setIsAuthed(false));
+        dispatch(AppActions.reset());
         router.push('/');
 
         return AuthService.Logout()

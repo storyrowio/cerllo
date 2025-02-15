@@ -12,26 +12,6 @@ import {AppActions} from "store/slices/AppSlice";
 
 export default function RootApp({ children }) {
     const pathname = usePathname();
-    const dispatch = useDispatch();
-
-    const fetchInitial = () => {
-        return AuthService.GetProfile()
-            .then(async res => {
-                if (res?.id) {
-                    await PlaylistService.GetPlaylistByQuery({user: res?.id})
-                        .then(res => {
-                            console.log('Playlist', res)
-                            dispatch(AppActions.setPlaylists(res?.data))
-                        });
-                }
-            }).catch(err => {
-                AuthService.Logout();
-            })
-    };
-
-    useEffect(() => {
-        fetchInitial();
-    }, []);
 
     let Layout = AppLayout;
 

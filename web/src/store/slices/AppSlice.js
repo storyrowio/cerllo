@@ -39,6 +39,7 @@ export const AppSlice = createSlice({
         setCurrentPlaylist: (state, action) => {
             state.currentPlaylist = action.payload;
         },
+        reset: () => initialState
     }
 });
 

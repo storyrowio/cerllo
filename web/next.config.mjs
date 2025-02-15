@@ -3,7 +3,6 @@ const nextConfig = {
     images: {
         unoptimized: true, // Required for static export
     },
-    trailingSlash: true,
     env: {
         ENVIRONMENT: process.env.ENVIRONMENT,
         VERSION: process.env.VERSION,

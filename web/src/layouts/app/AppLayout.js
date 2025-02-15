@@ -10,6 +10,8 @@ import {AppActions} from "store/slices/AppSlice";
 import AppSidebar from "layouts/app/components/sidebar/AppSidebar";
 import Player from "components/shared/Player";
 import PlaylistFormDialog from "components/pages/playlist/PlaylistFormDialog";
+import AuthService from "services/AuthService";
+import PlaylistService from "services/PlaylistService";
 
 const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' && prop !== 'drawerWidth' })(
     ({ theme, drawerWidth }) => ({
@@ -30,7 +32,33 @@ export default function AppLayout({ children }) {
     const searchParams = useSearchParams();
     const token = searchParams.get('token');
     const { drawerWidth } = useSelector(state => state.theme);
-    const { songs, playlists } = useSelector(state => state.app);
+    const { songs } = useSelector(state => state.app);
+
+    const fetchPlaylist = async (userId) => {
+        return PlaylistService.GetPlaylistByQuery({user: userId})
+            .then(res => {
+                dispatch(AppActions.setPlaylists(res?.data))
+            });
+    }
+
+    const fetchInitial = () => {
+        return AuthService.GetProfile()
+            .then(async res => {
+                if (res?.id) {
+                    fetchPlaylist(res?.id);
+                }
+            }).catch(async err => {
+                console.log('Error', err)
+                await AuthService.RefreshToken()
+                    .then(() => {
+                        fetchInitial();
+                    })
+            })
+    };
+
+    useEffect(() => {
+        fetchInitial();
+    }, []);
 
     useEffect(() => {
         if (token) {

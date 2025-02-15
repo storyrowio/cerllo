@@ -21,10 +21,12 @@ import AlbumCard from "components/card/AlbumCard";
 import {BasicSort} from "constants/constants";
 import SongCard from "components/card/SongCard";
 import SongList from "components/pages/home/SongList";
+import {useRouter} from "next/navigation";
 
 export default function Home() {
     const theme = useTheme();
     const dispatch = useDispatch();
+    const router = useRouter();
 
     const { data: resData } = useSWR('/api/song', () => SongService.GetSongByQuery({sort: BasicSort.newest.value}));
     const { data: resArtists } = useSWR('/api/artist', () => ArtistService.GetArtistByQuery({limit: 6}));
@@ -45,7 +47,11 @@ export default function Home() {
                    <CardContent sx={{ padding: theme.spacing(2, 5) }}>
                        <Stack direction="row" justifyContent="space-between" spacing={2}>
                            {resArtists?.data?.map((e, i) => (
-                               <ArtistCard key={i} image={e.image} title={e.name}/>
+                               <ArtistCard
+                                   key={i}
+                                   image={e.image}
+                                   title={e.name}
+                                onClick={() => router.push(`/artist/${e.id}`)}/>
                            ))}
                        </Stack>
                    </CardContent>
@@ -54,7 +60,12 @@ export default function Home() {
                    <CardContent sx={{ padding: theme.spacing(2, 5) }}>
                        <Stack direction="row" justifyContent="space-between" spacing={2}>
                            {resAlbums?.data?.map((e, i) => (
-                               <AlbumCard key={i} image={e.image} title={e.title} subtitle={e.artist?.name}/>
+                               <AlbumCard
+                                   key={i}
+                                   image={e.image}
+                                   title={e.title}
+                                   subtitle={e.artist?.name}
+                                   onClick={() => router.push(`/album/${e.id}`)}/>
                            ))}
                        </Stack>
                    </CardContent>

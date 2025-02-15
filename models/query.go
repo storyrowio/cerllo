@@ -10,15 +10,13 @@ import (
 )
 
 type Query struct {
-	Keyword     string `form:"keyword"`
-	Sort        string `form:"sort"`
-	Limit       string `form:"limit"`
-	Page        string `form:"page"`
-	UserId      string `form:"user"`
-	ProjectId   string `form:"project"`
-	WorkspaceId string `form:"workspace"`
-	Assigned    string `form:"assigned"`
-	Completed   string `form:"completed"`
+	Keyword  string `form:"keyword"`
+	Sort     string `form:"sort"`
+	Limit    string `form:"limit"`
+	Page     string `form:"page"`
+	UserId   string `form:"user"`
+	ArtistId string `form:"artist"`
+	AlbumId  string `form:"album"`
 }
 
 type Pagination struct {
@@ -98,12 +96,12 @@ func (q Query) GetQueryFind() bson.M {
 		query["title"] = regex
 	}
 
-	if q.ProjectId != "" {
-		query["projectId"] = q.ProjectId
+	if q.ArtistId != "" {
+		query["artistId"] = q.ArtistId
 	}
 
-	if q.WorkspaceId != "" {
-		query["workspaceId"] = q.WorkspaceId
+	if q.AlbumId != "" {
+		query["albumId"] = q.AlbumId
 	}
 
 	return query

@@ -1,1 +1,1 @@
-export const AUTH_TOKEN = "x-token"
+export const AUTH_TOKEN = "cer-token"

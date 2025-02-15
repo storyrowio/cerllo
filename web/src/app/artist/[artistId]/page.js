@@ -8,18 +8,19 @@ import {useDispatch} from "store";
 import {Box, Card, CardContent, Grid2, Stack, useTheme} from "@mui/material";
 import AdsterraBanner from "components/ads/AdsterraBanner";
 import Playlist from "components/shared/Playlist";
-export default function PlaylistPage() {
-    const { playlistId } = useParams();
+import SongService from "services/SongService";
+export default function ArtistSongPage() {
+    const { artistId } = useParams();
     const dispatch = useDispatch();
     const theme = useTheme();
 
     const { data: resData } = useSWR(
-        playlistId ? '/api/playlist' : null,
-        () => PlaylistService.GetPlaylistById(playlistId),
+        artistId ? '/api/artist/song' : null,
+        () => SongService.GetSongByQuery({artist: artistId}),
         {
-            revalidateOnMount: true,
+            revalidateOnMount: false,
             onSuccess: (res) => {
-                dispatch(AppActions.setSongs(res?.songs));
+                dispatch(AppActions.setSongs(res?.data));
             }
         }
     );
@@ -31,7 +32,7 @@ export default function PlaylistPage() {
             }}>
                 <Card elevation={0} sx={{ marginTop: 3 }}>
                     <CardContent sx={{ padding: theme.spacing(2, 5) }}>
-                        <Playlist songs={resData?.songs ?? []}/>
+                        <Playlist songs={resData?.data ?? []}/>
                     </CardContent>
                 </Card>
                 <Box height={50}/>

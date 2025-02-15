@@ -12,10 +12,10 @@ const CardItem = styled(Box)(({ theme }) => ({
 }));
 
 export default function AlbumCard(props) {
-    const { image, title, subtitle } = props;
+    const { image, title, subtitle, ...rest } = props;
 
     return (
-        <CardItem>
+        <CardItem {...rest}>
             <Stack alignItems="center">
                 <Box sx={{ width: 150, height: 150, borderRadius: 100, position: 'relative' }}>
                     <Image
